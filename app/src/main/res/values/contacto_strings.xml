@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="contacto_titulo">Nuevo contacto</string>
+    <string name="contacto_nombre">Nombre</string>
+    <string name="contacto_telefono">Teléfono</string>
+    <string name="contacto_latitud_pendiente">Latitud: pendiente</string>
+    <string name="contacto_longitud_pendiente">Longitud: pendiente</string>
+    <string name="contacto_latitud_valor">Latitud: %1$s</string>
+    <string name="contacto_longitud_valor">Longitud: %1$s</string>
+    <string name="contacto_sin_video">Sin video adjunto</string>
+    <string name="contacto_video_listo">Video listo para enviar</string>
+    <string name="contacto_cargar_prueba">Cargar MP4 y ubicación de prueba</string>
+    <string name="contacto_salvar">Salvar contacto</string>
+    <string name="contacto_reintentar">Reintentar</string>
+    <string name="contacto_falta_nombre">Escribe el nombre.</string>
+    <string name="contacto_falta_telefono">Escribe el teléfono.</string>
+    <string name="contacto_falta_ubicacion">Falta la ubicación del contacto.</string>
+    <string name="contacto_video_requerido">Adjunta un video para guardar el contacto.</string>
+    <string name="contacto_guardando">Guardando contacto…</string>
+    <string name="contacto_error_lectura">No se pudo leer el video. Selecciónalo o grábalo otra vez.</string>
+    <string name="contacto_video_grande">El video debe pesar como máximo 20 MB.</string>
+    <string name="contacto_video_vacio">El video está vacío.</string>
+    <string name="contacto_guardado">Contacto guardado. ID: %1$d</string>
+    <string name="contacto_respuesta_vacia">El servidor devolvió una respuesta inesperada. Revisa los contactos guardados.</string>
+    <string name="contacto_error_conexion">No se pudo confirmar el guardado. Revisa tu conexión y comprueba si el contacto ya existe antes de reintentar.</string>
+</resources>
