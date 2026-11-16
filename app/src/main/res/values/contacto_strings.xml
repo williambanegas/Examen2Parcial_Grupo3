@@ -23,7 +23,8 @@
     <string name="contacto_falta_telefono">Escribe el teléfono.</string>
     <string name="contacto_telefono_invalido">Escribe 8 dígitos de Honduras. Puedes incluir el prefijo +504.</string>
     <string name="contacto_telefono_ejemplo">Ej. 0000-0000</string>
-    <string name="contacto_falta_ubicacion">Falta la ubicación del contacto.</string>
+    <string name="contacto_obtener_ubicacion">Obtener ubicación</string>
+    <string name="contacto_falta_ubicacion">Aún no hay coordenadas para guardar el contacto. Activa la ubicación y toca Obtener ubicación.</string>
     <string name="contacto_video_requerido">Adjunta un video para guardar el contacto.</string>
     <string name="contacto_guardando">Guardando contacto…</string>
     <string name="contacto_error_lectura">No se pudo leer el video. Selecciónalo o grábalo otra vez.</string>
