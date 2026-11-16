@@ -176,6 +176,14 @@
             android:text="@string/contacto_longitud_pendiente"
             android:textAppearance="?attr/textAppearanceBodyMedium" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/obtenerUbicacionContacto"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="@string/contacto_obtener_ubicacion" />
+
         <!-- Botón Salvar Contacto -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/salvarContacto"

@@ -3,7 +3,6 @@ package com.grupo3.examen;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.media.MediaMetadataRetriever;
@@ -151,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText telefono;
     private TextView latitud;
     private TextView longitud;
+    private Button obtenerUbicacion;
     private TextView video;
     private TextView estado;
     private Button tomarVideo;
@@ -180,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
         telefono.setRawInputType(InputType.TYPE_CLASS_PHONE);
         latitud = findViewById(R.id.latitudContacto);
         longitud = findViewById(R.id.longitudContacto);
+        obtenerUbicacion = findViewById(R.id.obtenerUbicacionContacto);
         video = findViewById(R.id.videoContacto);
         estado = findViewById(R.id.estadoGuardado);
         tomarVideo = findViewById(R.id.tomarVideo);
@@ -196,15 +197,11 @@ public class MainActivity extends AppCompatActivity {
         reproducirVideoLocal.setOnClickListener(vista -> reproducirVideo());
 
         guardar.setOnClickListener(vista -> guardarContacto());
+        obtenerUbicacion.setOnClickListener(vista -> obtenerUbicacionActual());
         contactosSalvados.setOnClickListener(vista -> abrirContactosSalvados());
         reintentar.setOnClickListener(vista -> guardarContacto());
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        if (savedInstanceState == null || !savedInstanceState.containsKey("latitud")) {
-            usarUbicacion(15.50, -88.00);
-        }
-        obtenerUbicacionActual();
-
         if (savedInstanceState != null) {
             String uri = savedInstanceState.getString("videoUri");
             if (uri != null) {
@@ -214,17 +211,12 @@ public class MainActivity extends AppCompatActivity {
             if (uriTemp != null) {
                 uriTemporalVideo = Uri.parse(uriTemp);
             }
-            if (savedInstanceState.containsKey("latitud")) {
+            if (savedInstanceState.containsKey("latitud") && savedInstanceState.containsKey("longitud")) {
                 usarUbicacion(savedInstanceState.getDouble("latitud"),
                         savedInstanceState.getDouble("longitud"));
             }
         }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (valorLatitud == null || valorLongitud == null) {
+        if (savedInstanceState == null) {
             obtenerUbicacionActual();
         }
     }
@@ -357,13 +349,14 @@ public class MainActivity extends AppCompatActivity {
             valorLongitud = null;
             latitud.setText(R.string.contacto_latitud_pendiente);
             longitud.setText(R.string.contacto_longitud_pendiente);
-            estado.setText(R.string.contacto_falta_ubicacion);
+            obtenerUbicacion.setVisibility(View.VISIBLE);
             return;
         }
         valorLatitud = nuevaLatitud;
         valorLongitud = nuevaLongitud;
         latitud.setText(getString(R.string.contacto_latitud_valor, Double.toString(nuevaLatitud)));
         longitud.setText(getString(R.string.contacto_longitud_valor, Double.toString(nuevaLongitud)));
+        obtenerUbicacion.setVisibility(View.GONE);
     }
 
     @Override
@@ -382,6 +375,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void guardarContacto() {
+        if (!guardar.isEnabled()) {
+            return;
+        }
         estado.setText("");
         reintentar.setVisibility(View.GONE);
         String nombreActual = nombre.getText().toString().trim();
@@ -502,7 +498,7 @@ public class MainActivity extends AppCompatActivity {
                 peticionActiva = null;
                 mostrarCarga(false);
                 Contacto creado = respuesta.body();
-                if (respuesta.isSuccessful() && creado != null) {
+                if (respuesta.isSuccessful() && creado != null && creado.getId() > 0) {
                     nombre.setText("");
                     telefono.setText("");
                     usarVideo(null);
@@ -535,6 +531,8 @@ public class MainActivity extends AppCompatActivity {
     private void mostrarCarga(boolean cargando) {
         progreso.setVisibility(cargando ? View.VISIBLE : View.GONE);
         guardar.setEnabled(!cargando);
+        obtenerUbicacion.setEnabled(!cargando);
+        reintentar.setEnabled(!cargando);
         contactosSalvados.setEnabled(!cargando);
         tomarVideo.setEnabled(!cargando);
         if (reproducirVideoLocal != null) {
