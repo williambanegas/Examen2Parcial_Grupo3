@@ -4,6 +4,7 @@ import java.util.List;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
@@ -14,6 +15,7 @@ import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import retrofit2.http.Streaming;
 
 public interface ApiService {
     @Multipart
@@ -28,6 +30,10 @@ public interface ApiService {
 
     @GET("api/contactos")
     Call<List<Contacto>> listar(@Query("buscar") String buscar);
+
+    @Streaming
+    @GET("api/contactos/{id}/archivo")
+    Call<ResponseBody> descargarArchivo(@Path("id") int id);
 
     @PUT("api/contactos/{id}")
     Call<Contacto> actualizar(@Path("id") int id, @Body DatosContacto datos);
