@@ -9,6 +9,8 @@ import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.InputType;
+import android.text.method.TextKeyListener;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -87,14 +89,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-    private final ActivityResultLauncher<String> elegirVideoPrueba = registerForActivityResult(
-            new ActivityResultContracts.GetContent(), uri -> {
-                if (uri != null) {
-                    validarYUsarVideo(uri);
-                    usarUbicacion(14.48, -88.78);
-                }
-            });
-
     private EditText nombre;
     private EditText telefono;
     private TextView latitud;
@@ -106,7 +100,6 @@ public class MainActivity extends AppCompatActivity {
     private ImageView iconoPlayVideo;
     private Button guardar;
     private Button contactosSalvados;
-    private Button prueba;
     private Button reintentar;
     private ProgressBar progreso;
 
@@ -125,6 +118,9 @@ public class MainActivity extends AppCompatActivity {
 
         nombre = findViewById(R.id.nombreContacto);
         telefono = findViewById(R.id.telefonoContacto);
+        // Mantener el teclado telefónico y validar el texto pegado completo.
+        telefono.setKeyListener(TextKeyListener.getInstance());
+        telefono.setRawInputType(InputType.TYPE_CLASS_PHONE);
         latitud = findViewById(R.id.latitudContacto);
         longitud = findViewById(R.id.longitudContacto);
         video = findViewById(R.id.videoContacto);
@@ -135,7 +131,6 @@ public class MainActivity extends AppCompatActivity {
         View contenedorIconoVideo = findViewById(R.id.contenedorIconoVideo);
         guardar = findViewById(R.id.salvarContacto);
         contactosSalvados = findViewById(R.id.contactosSalvados);
-        prueba = findViewById(R.id.cargarPrueba);
         reintentar = findViewById(R.id.reintentarGuardado);
         progreso = findViewById(R.id.progresoGuardado);
 
@@ -146,10 +141,6 @@ public class MainActivity extends AppCompatActivity {
         guardar.setOnClickListener(vista -> guardarContacto());
         contactosSalvados.setOnClickListener(vista -> abrirContactosSalvados());
         reintentar.setOnClickListener(vista -> guardarContacto());
-        if ((getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
-            prueba.setVisibility(View.VISIBLE);
-            prueba.setOnClickListener(vista -> elegirVideoPrueba.launch("video/mp4"));
-        }
 
         if (savedInstanceState != null) {
             String uri = savedInstanceState.getString("videoUri");
@@ -240,6 +231,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         usarVideo(uri);
+        if ((getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0
+                && valorLatitud == null && valorLongitud == null) {
+            usarUbicacion(14.48, -88.78);
+        }
     }
 
     private void reproducirOIniciarVideo() {
@@ -336,6 +331,12 @@ public class MainActivity extends AppCompatActivity {
             telefono.requestFocus();
             return;
         }
+        String telefonoNormalizado = TelefonoContacto.normalizar(telefonoActual);
+        if (telefonoNormalizado == null) {
+            telefono.setError(getString(R.string.contacto_telefono_invalido));
+            telefono.requestFocus();
+            return;
+        }
         if (valorLatitud == null || valorLongitud == null) {
             estado.setText(R.string.contacto_falta_ubicacion);
             return;
@@ -346,7 +347,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Uri uri = videoUri;
-        DatosContacto datos = new DatosContacto(nombreActual, telefonoActual, valorLatitud, valorLongitud);
+        DatosContacto datos = new DatosContacto(
+                nombreActual, telefonoNormalizado, valorLatitud, valorLongitud);
         mostrarCarga(true);
         estado.setText(R.string.contacto_guardando);
 
@@ -467,7 +469,6 @@ public class MainActivity extends AppCompatActivity {
         if (reproducirVideoLocal != null) {
             reproducirVideoLocal.setEnabled(!cargando);
         }
-        prueba.setEnabled(!cargando);
         nombre.setEnabled(!cargando);
         telefono.setEnabled(!cargando);
     }
