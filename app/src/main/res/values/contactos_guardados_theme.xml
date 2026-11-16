@@ -1,0 +1,9 @@
+<resources>
+    <style name="Theme.ContactosGuardados" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">#00532C</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#00532C</item>
+        <item name="android:colorAccent">#00532C</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>
