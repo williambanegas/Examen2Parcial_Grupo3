@@ -28,5 +28,8 @@
     <string name="cg_limite">Máximo %1$d caracteres.</string>
     <string name="cg_sin_nombre">Sin nombre</string>
     <string name="cg_sin_telefono">Sin teléfono</string>
+    <string name="cg_ubicacion">Ubicación</string>
+    <string name="map_titulo_contacto">Ubicación de %1$s</string>
+    <string name="map_volver">Regresar</string>
     <string name="cg_coordenadas">Las coordenadas recibidas no son válidas. Actualiza la lista.</string>
 </resources>

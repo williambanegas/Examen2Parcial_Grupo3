@@ -1,5 +1,6 @@
 package com.grupo3.examen;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
@@ -17,6 +18,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import java.util.HashSet;
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -164,7 +167,7 @@ public class ContactosActivity extends AppCompatActivity implements ContactosAda
     }
 
     private boolean listaCorrecta(List<Contacto> contactos) {
-        java.util.HashSet<Integer> ids = new java.util.HashSet<>();
+        HashSet<Integer> ids = new HashSet<>();
         for (Contacto contacto : contactos) {
             if (contacto == null || contacto.getId() <= 0 || !ids.add(contacto.getId())) return false;
         }
@@ -357,6 +360,16 @@ public class ContactosActivity extends AppCompatActivity implements ContactosAda
         reintentar.setText(R.string.cg_actualizar);
         reintentar.setVisibility(View.VISIBLE);
         Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void verUbicacion(Contacto contacto) {
+        if (contacto == null) return;
+        Intent intent = new Intent(this, UbicacionContactoActivity.class);
+        intent.putExtra("latitud", contacto.getLatitud());
+        intent.putExtra("longitud", contacto.getLongitud());
+        intent.putExtra("nombre", contacto.getNombre());
+        startActivity(intent);
     }
 
     private void aviso(int mensaje) {
