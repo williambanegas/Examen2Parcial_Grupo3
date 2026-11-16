@@ -155,7 +155,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="phone"
-            android:maxLength="30"
+            android:hint="@string/contacto_telefono_ejemplo"
             android:maxLines="1"
             android:singleLine="true" />
 
