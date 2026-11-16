@@ -1,21 +1,34 @@
 package com.grupo3.examen;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -35,12 +48,49 @@ public class MainActivity extends AppCompatActivity {
     private static final MediaType TEXTO = MediaType.get("text/plain; charset=utf-8");
     private static final MediaType MP4 = MediaType.get("video/mp4");
     private static final long MAX_VIDEO_BYTES = 20_000_000L;
+    private static final long MAX_DURACION_VIDEO_MS = 20_500L; // 20s con tolerancia por codec
 
     private final ExecutorService archivos = Executors.newSingleThreadExecutor();
+
+    private Uri videoUri;
+    private Uri uriTemporalVideo;
+    private Double valorLatitud;
+    private Double valorLongitud;
+    private Call<Contacto> peticionActiva;
+
+    // Contrato con límite de 20 segundos para la cámara del sistema
+    private static class CaptureVideo20s extends ActivityResultContracts.CaptureVideo {
+        @NonNull
+        @Override
+        public Intent createIntent(@NonNull Context context, @NonNull Uri input) {
+            Intent intent = super.createIntent(context, input);
+            intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 20);
+            return intent;
+        }
+    }
+
+    private final ActivityResultLauncher<String[]> solicitarPermisos = registerForActivityResult(
+            new ActivityResultContracts.RequestMultiplePermissions(), resultados -> {
+                boolean camara = Boolean.TRUE.equals(resultados.get(Manifest.permission.CAMERA));
+                boolean audio = Boolean.TRUE.equals(resultados.get(Manifest.permission.RECORD_AUDIO));
+                if (camara && audio) {
+                    iniciarGrabacionVideo();
+                } else {
+                    mostrarDialogoPermisos();
+                }
+            });
+
+    private final ActivityResultLauncher<Uri> capturarVideo = registerForActivityResult(
+            new CaptureVideo20s(), exitoso -> {
+                if (Boolean.TRUE.equals(exitoso) && uriTemporalVideo != null) {
+                    validarYUsarVideo(uriTemporalVideo);
+                }
+            });
+
     private final ActivityResultLauncher<String> elegirVideoPrueba = registerForActivityResult(
             new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null) {
-                    usarVideo(uri);
+                    validarYUsarVideo(uri);
                     usarUbicacion(14.48, -88.78);
                 }
             });
@@ -51,15 +101,14 @@ public class MainActivity extends AppCompatActivity {
     private TextView longitud;
     private TextView video;
     private TextView estado;
+    private Button tomarVideo;
+    private Button reproducirVideoLocal;
+    private ImageView iconoPlayVideo;
     private Button guardar;
+    private Button contactosSalvados;
     private Button prueba;
     private Button reintentar;
     private ProgressBar progreso;
-
-    private Uri videoUri;
-    private Double valorLatitud;
-    private Double valorLongitud;
-    private Call<Contacto> peticionActiva;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,12 +129,22 @@ public class MainActivity extends AppCompatActivity {
         longitud = findViewById(R.id.longitudContacto);
         video = findViewById(R.id.videoContacto);
         estado = findViewById(R.id.estadoGuardado);
+        tomarVideo = findViewById(R.id.tomarVideo);
+        reproducirVideoLocal = findViewById(R.id.reproducirVideoLocal);
+        iconoPlayVideo = findViewById(R.id.iconoPlayVideo);
+        View contenedorIconoVideo = findViewById(R.id.contenedorIconoVideo);
         guardar = findViewById(R.id.salvarContacto);
+        contactosSalvados = findViewById(R.id.contactosSalvados);
         prueba = findViewById(R.id.cargarPrueba);
         reintentar = findViewById(R.id.reintentarGuardado);
         progreso = findViewById(R.id.progresoGuardado);
 
+        tomarVideo.setOnClickListener(vista -> verificarPermisosYGrabar());
+        contenedorIconoVideo.setOnClickListener(vista -> reproducirOIniciarVideo());
+        reproducirVideoLocal.setOnClickListener(vista -> reproducirVideo());
+
         guardar.setOnClickListener(vista -> guardarContacto());
+        contactosSalvados.setOnClickListener(vista -> abrirContactosSalvados());
         reintentar.setOnClickListener(vista -> guardarContacto());
         if ((getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
             prueba.setVisibility(View.VISIBLE);
@@ -97,6 +156,10 @@ public class MainActivity extends AppCompatActivity {
             if (uri != null) {
                 usarVideo(Uri.parse(uri));
             }
+            String uriTemp = savedInstanceState.getString("uriTemporalVideo");
+            if (uriTemp != null) {
+                uriTemporalVideo = Uri.parse(uriTemp);
+            }
             if (savedInstanceState.containsKey("latitud")) {
                 usarUbicacion(savedInstanceState.getDouble("latitud"),
                         savedInstanceState.getDouble("longitud"));
@@ -104,10 +167,124 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Navegación a la Pantalla 2 (Lista de Contactos Salvados).
+     *
+     * GUÍA PARA EL INTEGRANTE 5:
+     * Cuando crees la Activity de la Pantalla 2 (por ejemplo, ListaContactosActivity),
+     * reemplaza este Toast por el Intent correspondiente:
+     *     Intent intent = new Intent(this, ListaContactosActivity.class);
+     *     startActivity(intent);
+     */
+    private void abrirContactosSalvados() {
+        Toast.makeText(this,
+                "Pantalla 2 (Contactos Salvados) - Asignada al Integrante 5",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    private void verificarPermisosYGrabar() {
+        boolean tieneCamara = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED;
+        boolean tieneAudio = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                == PackageManager.PERMISSION_GRANTED;
+
+        if (tieneCamara && tieneAudio) {
+            iniciarGrabacionVideo();
+        } else {
+            solicitarPermisos.launch(new String[]{
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.RECORD_AUDIO
+            });
+        }
+    }
+
+    private void iniciarGrabacionVideo() {
+        try {
+            File carpetaVideos = new File(getCacheDir(), "videos");
+            if (!carpetaVideos.exists() && !carpetaVideos.mkdirs()) {
+                throw new IOException("No se pudo crear directorio temporal.");
+            }
+            File archivoTemporal = File.createTempFile("clip_", ".mp4", carpetaVideos);
+            uriTemporalVideo = FileProvider.getUriForFile(
+                    this, getPackageName() + ".fileprovider", archivoTemporal);
+            capturarVideo.launch(uriTemporalVideo);
+        } catch (IOException e) {
+            estado.setText(R.string.contacto_error_lectura);
+        }
+    }
+
+    private void validarYUsarVideo(Uri uri) {
+        long duracionMs = 0;
+        try (MediaMetadataRetriever retriever = new MediaMetadataRetriever()) {
+            retriever.setDataSource(this, uri);
+            String duracionStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+            if (duracionStr != null) {
+                duracionMs = Long.parseLong(duracionStr);
+            }
+        } catch (Exception ignored) {
+            // Continuar con la validación de tamaño en guardar
+        }
+
+        if (duracionMs > MAX_DURACION_VIDEO_MS) {
+            try {
+                getContentResolver().delete(uri, null, null);
+            } catch (Exception ignored) {
+            }
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.contacto_permisos_video_titulo)
+                    .setMessage(R.string.contacto_video_duracion_excedida)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show();
+            usarVideo(null);
+            return;
+        }
+
+        usarVideo(uri);
+    }
+
+    private void reproducirOIniciarVideo() {
+        if (videoUri != null) {
+            reproducirVideo();
+        } else {
+            verificarPermisosYGrabar();
+        }
+    }
+
+    private void reproducirVideo() {
+        if (videoUri == null) {
+            return;
+        }
+        String titulo = nombre.getText().toString().trim();
+        if (titulo.isEmpty()) {
+            titulo = getString(R.string.ver_video_titulo);
+        }
+        VerVideoActivity.reproducirUri(this, videoUri, titulo);
+    }
+
+    private void mostrarDialogoPermisos() {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.contacto_permisos_video_titulo)
+                .setMessage(R.string.contacto_permisos_video_mensaje)
+                .setPositiveButton(R.string.contacto_permisos_ajustes, (dialogo, que) -> {
+                    Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    intent.setData(Uri.fromParts("package", getPackageName(), null));
+                    startActivity(intent);
+                })
+                .setNegativeButton(R.string.contacto_permisos_cancelar, null)
+                .show();
+    }
+
     // Llamar desde el resultado exitoso de la grabación del integrante 4.
     public void usarVideo(Uri uri) {
         videoUri = uri;
         video.setText(uri == null ? R.string.contacto_sin_video : R.string.contacto_video_listo);
+        boolean hayVideo = (uri != null);
+        if (iconoPlayVideo != null) {
+            iconoPlayVideo.setVisibility(hayVideo ? View.VISIBLE : View.GONE);
+        }
+        if (reproducirVideoLocal != null) {
+            reproducirVideoLocal.setVisibility(hayVideo ? View.VISIBLE : View.GONE);
+        }
     }
 
     // Llamar desde el resultado de ubicación del integrante 6.
@@ -133,6 +310,9 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(estadoGuardado);
         if (videoUri != null) {
             estadoGuardado.putString("videoUri", videoUri.toString());
+        }
+        if (uriTemporalVideo != null) {
+            estadoGuardado.putString("uriTemporalVideo", uriTemporalVideo.toString());
         }
         if (valorLatitud != null && valorLongitud != null) {
             estadoGuardado.putDouble("latitud", valorLatitud);
@@ -282,6 +462,11 @@ public class MainActivity extends AppCompatActivity {
     private void mostrarCarga(boolean cargando) {
         progreso.setVisibility(cargando ? View.VISIBLE : View.GONE);
         guardar.setEnabled(!cargando);
+        contactosSalvados.setEnabled(!cargando);
+        tomarVideo.setEnabled(!cargando);
+        if (reproducirVideoLocal != null) {
+            reproducirVideoLocal.setEnabled(!cargando);
+        }
         prueba.setEnabled(!cargando);
         nombre.setEnabled(!cargando);
         telefono.setEnabled(!cargando);

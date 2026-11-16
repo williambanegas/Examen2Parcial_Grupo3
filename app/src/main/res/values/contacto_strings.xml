@@ -9,8 +9,16 @@
     <string name="contacto_longitud_valor">Longitud: %1$s</string>
     <string name="contacto_sin_video">Sin video adjunto</string>
     <string name="contacto_video_listo">Video listo para enviar</string>
+    <string name="contacto_tomar_video">Tomar Video</string>
+    <string name="contacto_reproducir_video">Reproducir video</string>
+    <string name="contacto_permisos_video_titulo">Permisos de Cámara y Micrófono</string>
+    <string name="contacto_permisos_video_mensaje">Se requieren permisos de cámara y micrófono para grabar el video del contacto.</string>
+    <string name="contacto_permisos_ajustes">Configuración</string>
+    <string name="contacto_permisos_cancelar">Cancelar</string>
+    <string name="contacto_video_duracion_excedida">El video no debe superar el límite de 20 segundos. Graba un clip más corto.</string>
     <string name="contacto_cargar_prueba">Cargar MP4 y ubicación de prueba</string>
     <string name="contacto_salvar">Salvar contacto</string>
+    <string name="contacto_ver_salvados">Contactos Salvados</string>
     <string name="contacto_reintentar">Reintentar</string>
     <string name="contacto_falta_nombre">Escribe el nombre.</string>
     <string name="contacto_falta_telefono">Escribe el teléfono.</string>
@@ -23,4 +31,10 @@
     <string name="contacto_guardado">Contacto guardado. ID: %1$d</string>
     <string name="contacto_respuesta_vacia">El servidor devolvió una respuesta inesperada. Revisa los contactos guardados.</string>
     <string name="contacto_error_conexion">No se pudo confirmar el guardado. Revisa tu conexión y comprueba si el contacto ya existe antes de reintentar.</string>
+
+    <!-- Reproductor de Video -->
+    <string name="ver_video_titulo">Video del contacto</string>
+    <string name="ver_video_cargando">Cargando video…</string>
+    <string name="ver_video_error">No se pudo reproducir el video. Verifica tu conexión o el archivo.</string>
+    <string name="ver_video_atras">Regresar</string>
 </resources>
