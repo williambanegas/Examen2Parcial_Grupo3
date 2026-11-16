@@ -52,6 +52,9 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import android.text.InputType;
+import android.text.method.TextKeyListener;
+
 public class MainActivity extends AppCompatActivity {
     private static final MediaType TEXTO = MediaType.get("text/plain; charset=utf-8");
     private static final MediaType MP4 = MediaType.get("video/mp4");
@@ -173,6 +176,8 @@ public class MainActivity extends AppCompatActivity {
 
         nombre = findViewById(R.id.nombreContacto);
         telefono = findViewById(R.id.telefonoContacto);
+        telefono.setKeyListener(TextKeyListener.getInstance());
+        telefono.setRawInputType(InputType.TYPE_CLASS_PHONE);
         latitud = findViewById(R.id.latitudContacto);
         longitud = findViewById(R.id.longitudContacto);
         video = findViewById(R.id.videoContacto);
@@ -392,6 +397,17 @@ public class MainActivity extends AppCompatActivity {
             telefono.requestFocus();
             return;
         }
+        if (!telefonoActual.matches("(?:\\+504[ -]?)?[0-9]{4}[ -]?[0-9]{4}")) {
+            telefono.setError(getString(R.string.contacto_telefono_invalido));
+            telefono.requestFocus();
+            return;
+        }
+
+        String telefonoNormalizado = telefonoActual
+                .replaceFirst("^\\+504", "")
+                .replace(" ", "")
+                .replace("-", "");
+
         if (valorLatitud == null || valorLongitud == null) {
             estado.setText(R.string.contacto_falta_ubicacion);
             return;
@@ -402,7 +418,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Uri uri = videoUri;
-        DatosContacto datos = new DatosContacto(nombreActual, telefonoActual, valorLatitud, valorLongitud);
+        DatosContacto datos = new DatosContacto(
+                nombreActual, telefonoNormalizado, valorLatitud, valorLongitud);
         mostrarCarga(true);
         estado.setText(R.string.contacto_guardando);
 
