@@ -176,18 +176,6 @@
             android:text="@string/contacto_longitud_pendiente"
             android:textAppearance="?attr/textAppearanceBodyMedium" />
 
-        <!-- Botón Debug Cargar Prueba (mantenido) -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/cargarPrueba"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="16dp"
-            android:text="@string/contacto_cargar_prueba"
-            android:textColor="@color/white"
-            app:backgroundTint="@color/uth_green"
-            app:cornerRadius="26dp"
-            android:visibility="gone" />
-
         <!-- Botón Salvar Contacto -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/salvarContacto"

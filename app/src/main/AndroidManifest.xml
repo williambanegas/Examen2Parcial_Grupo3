@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -54,6 +56,15 @@
             android:exported="false"
             android:configChanges="orientation|screenSize"
             android:theme="@style/Theme.Examen2Parcial_Grupo3" />
+
+        <activity
+            android:name=".UbicacionContactoActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ContactosGuardados" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDErISfzEWmaZMiGpz-O-LpsecIr5rU7YA" />
     </application>
 
 </manifest>

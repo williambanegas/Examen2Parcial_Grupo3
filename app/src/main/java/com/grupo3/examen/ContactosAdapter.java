@@ -15,6 +15,7 @@ public class ContactosAdapter extends ArrayAdapter<Contacto> {
     public interface Acciones {
         void editar(Contacto contacto);
         void eliminar(Contacto contacto);
+        void verUbicacion(Contacto contacto);
     }
 
     private final Acciones acciones;
@@ -39,14 +40,17 @@ public class ContactosAdapter extends ArrayAdapter<Contacto> {
         Contacto contacto = getItem(posicion);
         TextView nombre = vista.findViewById(R.id.cg_nombre);
         TextView telefono = vista.findViewById(R.id.cg_telefono);
+        Button ubicacion = vista.findViewById(R.id.cg_ubicacion);
         Button editar = vista.findViewById(R.id.cg_editar);
         Button eliminar = vista.findViewById(R.id.cg_eliminar);
         nombre.setText(contacto == null || contacto.getNombre() == null
                 ? getContext().getString(R.string.cg_sin_nombre) : contacto.getNombre());
         telefono.setText(contacto == null || contacto.getTelefono() == null
                 ? getContext().getString(R.string.cg_sin_telefono) : contacto.getTelefono());
+        ubicacion.setEnabled(habilitado && contacto != null && contacto.getId() > 0);
         editar.setEnabled(habilitado && contacto != null && contacto.getId() > 0);
         eliminar.setEnabled(habilitado && contacto != null && contacto.getId() > 0);
+        ubicacion.setOnClickListener(v -> acciones.verUbicacion(contacto));
         editar.setOnClickListener(v -> acciones.editar(contacto));
         eliminar.setOnClickListener(v -> acciones.eliminar(contacto));
         return vista;
