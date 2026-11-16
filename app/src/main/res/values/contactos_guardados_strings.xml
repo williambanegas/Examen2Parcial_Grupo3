@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="cg_titulo">Contactos guardados</string>
+    <string name="cg_volver">Regresar</string>
+    <string name="cg_buscar_hint">Nombre o teléfono</string>
+    <string name="cg_buscar">Buscar</string>
+    <string name="cg_limpiar">Limpiar</string>
+    <string name="cg_editar">Editar</string>
+    <string name="cg_eliminar">Eliminar</string>
+    <string name="cg_cancelar">Cancelar</string>
+    <string name="cg_guardar">Guardar</string>
+    <string name="cg_reintentar">Reintentar</string>
+    <string name="cg_actualizar">Actualizar lista</string>
+    <string name="cg_cargando">Consultando contactos…</string>
+    <string name="cg_procesando">Procesando…</string>
+    <string name="cg_vacio">Todavía no hay contactos guardados.</string>
+    <string name="cg_sin_resultados">No se encontraron coincidencias.</string>
+    <string name="cg_conexion">No se pudo consultar el servidor. Revisa tu conexión e inténtalo de nuevo.</string>
+    <string name="cg_inesperada">El servidor devolvió una respuesta inesperada. Actualiza la lista.</string>
+    <string name="cg_no_existe">El contacto ya no existe. Actualiza la lista.</string>
+    <string name="cg_guardado">Contacto actualizado.</string>
+    <string name="cg_eliminado">Contacto eliminado.</string>
+    <string name="cg_incierto">No se pudo confirmar la operación. Consulta la lista antes de volver a editar o eliminar.</string>
+    <string name="cg_confirmar">¿Estás seguro de que deseas eliminar a %1$s?</string>
+    <string name="cg_nombre">Nombre</string>
+    <string name="cg_telefono">Teléfono</string>
+    <string name="cg_requerido">Este campo es obligatorio.</string>
+    <string name="cg_limite">Máximo %1$d caracteres.</string>
+    <string name="cg_sin_nombre">Sin nombre</string>
+    <string name="cg_sin_telefono">Sin teléfono</string>
+    <string name="cg_coordenadas">Las coordenadas recibidas no son válidas. Actualiza la lista.</string>
+</resources>
