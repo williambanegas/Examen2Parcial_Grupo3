@@ -16,7 +16,6 @@
     <string name="contacto_permisos_ajustes">Configuración</string>
     <string name="contacto_permisos_cancelar">Cancelar</string>
     <string name="contacto_video_duracion_excedida">El video no debe superar el límite de 20 segundos. Graba un clip más corto.</string>
-    <string name="contacto_cargar_prueba">Cargar MP4 y ubicación de prueba</string>
     <string name="contacto_salvar">Salvar contacto</string>
     <string name="contacto_ver_salvados">Contactos Salvados</string>
     <string name="contacto_reintentar">Reintentar</string>
@@ -36,5 +35,4 @@
     <string name="ver_video_titulo">Video del contacto</string>
     <string name="ver_video_cargando">Cargando video…</string>
     <string name="ver_video_error">No se pudo reproducir el video. Verifica tu conexión o el archivo.</string>
-    <string name="ver_video_atras">Regresar</string>
 </resources>

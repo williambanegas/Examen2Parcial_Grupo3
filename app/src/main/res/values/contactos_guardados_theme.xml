@@ -1,5 +1,6 @@
 <resources>
     <style name="Theme.ContactosGuardados" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:windowBackground">@null</item>
         <item name="colorPrimary">#00532C</item>
         <item name="colorOnPrimary">#FFFFFF</item>
         <item name="colorSecondary">#00532C</item>

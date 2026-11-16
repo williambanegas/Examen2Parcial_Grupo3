@@ -1,5 +1,6 @@
 package com.grupo3.examen;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
@@ -12,11 +13,14 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.TooltipCompat;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import java.util.HashSet;
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -35,6 +39,7 @@ public class ContactosActivity extends AppCompatActivity implements ContactosAda
     private AlertDialog dialogo;
     private String filtro = "";
     private boolean cargando;
+    private boolean consultando;
     private boolean listaValida;
 
     @Override
@@ -42,6 +47,7 @@ public class ContactosActivity extends AppCompatActivity implements ContactosAda
         super.onCreate(guardado);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         setContentView(R.layout.activity_contactos);
+        ViewCompat.setAccessibilityHeading(findViewById(R.id.cg_encabezado), true);
         View raiz = findViewById(R.id.cg_raiz);
         ViewCompat.setOnApplyWindowInsetsListener(raiz, (vista, insets) -> {
             Insets margenes = insets.getInsets(
@@ -67,7 +73,22 @@ public class ContactosActivity extends AppCompatActivity implements ContactosAda
             busqueda.setText("");
             buscarContactos();
         });
-        reintentar.setOnClickListener(v -> consultar());
+        for (int id : new int[]{R.id.cg_volver, R.id.cg_buscar, R.id.cg_limpiar, R.id.cg_reintentar}) {
+            View accion = findViewById(id);
+            TooltipCompat.setTooltipText(accion, accion.getContentDescription());
+        }
+        reintentar.setOnClickListener(v -> {
+            if (consulta != null) {
+                consulta.cancel();
+                consulta = null;
+                consultando = false;
+                adapter.clear();
+                mostrarCarga(false);
+                estado.setText(R.string.cg_cancelada);
+            } else {
+                consultar();
+            }
+        });
         busqueda.setOnEditorActionListener((v, accion, evento) -> {
             if (accion == EditorInfo.IME_ACTION_SEARCH) {
                 buscarContactos();
@@ -83,7 +104,7 @@ public class ContactosActivity extends AppCompatActivity implements ContactosAda
     @Override
     protected void onResume() {
         super.onResume();
-        if (cambio == null && consulta == null && dialogo == null) {
+        if (!listaValida && cambio == null && consulta == null && dialogo == null) {
             consultar();
         }
     }
@@ -95,7 +116,7 @@ public class ContactosActivity extends AppCompatActivity implements ContactosAda
     }
 
     private void buscarContactos() {
-        if (cargando || cambio != null) return;
+        if (cambio != null) return;
         filtro = busqueda.getText().toString().trim();
         InputMethodManager teclado = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         if (teclado != null) teclado.hideSoftInputFromWindow(busqueda.getWindowToken(), 0);
@@ -109,10 +130,16 @@ public class ContactosActivity extends AppCompatActivity implements ContactosAda
     private void mostrarCarga(boolean valor) {
         cargando = valor;
         progreso.setVisibility(valor ? View.VISIBLE : View.GONE);
-        buscar.setEnabled(!valor);
-        limpiar.setEnabled(!valor);
-        busqueda.setEnabled(!valor);
-        reintentar.setEnabled(!valor);
+        buscar.setEnabled(!valor || consultando);
+        limpiar.setEnabled(!valor || consultando);
+        busqueda.setEnabled(!valor || consultando);
+        reintentar.setEnabled(!valor || consultando);
+        reintentar.setVisibility(View.VISIBLE);
+        ((com.google.android.material.button.MaterialButton) reintentar).setIconResource(
+                consultando ? R.drawable.cg_ic_close : R.drawable.cg_ic_refresh);
+        reintentar.setContentDescription(getString(consultando
+                ? R.string.cg_cancelar_carga : R.string.cg_actualizar));
+        TooltipCompat.setTooltipText(reintentar, reintentar.getContentDescription());
         adapter.habilitar(!valor && listaValida);
     }
 
@@ -120,7 +147,7 @@ public class ContactosActivity extends AppCompatActivity implements ContactosAda
         if (cerrada() || cambio != null) return;
         if (consulta != null) consulta.cancel();
         listaValida = false;
-        reintentar.setVisibility(View.GONE);
+        consultando = true;
         mostrarCarga(true);
         estado.setText(R.string.cg_cargando);
         try {
@@ -133,6 +160,7 @@ public class ContactosActivity extends AppCompatActivity implements ContactosAda
                         return;
                     }
                     consulta = null;
+                    consultando = false;
                     List<Contacto> contactos = respuesta.body();
                     if (respuesta.isSuccessful() && contactos != null && listaCorrecta(contactos)) {
                         adapter.clear();
@@ -140,9 +168,9 @@ public class ContactosActivity extends AppCompatActivity implements ContactosAda
                         listaValida = true;
                         mostrarCarga(false);
                         estado.setText(contactos.isEmpty()
-                                ? (filtro.isEmpty() ? R.string.cg_vacio : R.string.cg_sin_resultados)
-                                : R.string.cg_actualizar);
-                        reintentar.setText(R.string.cg_actualizar);
+                                ? getString(filtro.isEmpty() ? R.string.cg_vacio : R.string.cg_sin_resultados)
+                                : getResources().getQuantityString(R.plurals.cg_total, contactos.size(), contactos.size()));
+                        reintentar.setContentDescription(getString(R.string.cg_actualizar));
                         reintentar.setVisibility(View.VISIBLE);
                     } else {
                         falloConsulta(respuesta.isSuccessful()
@@ -154,17 +182,19 @@ public class ContactosActivity extends AppCompatActivity implements ContactosAda
                 public void onFailure(Call<List<Contacto>> call, Throwable error) {
                     if (cerrada() || call != consulta || call.isCanceled()) return;
                     consulta = null;
+                    consultando = false;
                     falloConsulta(getString(R.string.cg_conexion));
                 }
             });
         } catch (RuntimeException error) {
             consulta = null;
+            consultando = false;
             falloConsulta(getString(R.string.cg_inesperada));
         }
     }
 
     private boolean listaCorrecta(List<Contacto> contactos) {
-        java.util.HashSet<Integer> ids = new java.util.HashSet<>();
+        HashSet<Integer> ids = new HashSet<>();
         for (Contacto contacto : contactos) {
             if (contacto == null || contacto.getId() <= 0 || !ids.add(contacto.getId())) return false;
         }
@@ -176,7 +206,7 @@ public class ContactosActivity extends AppCompatActivity implements ContactosAda
         adapter.clear();
         mostrarCarga(false);
         estado.setText(mensaje);
-        reintentar.setText(R.string.cg_reintentar);
+        reintentar.setContentDescription(getString(R.string.cg_reintentar));
         reintentar.setVisibility(View.VISIBLE);
     }
 
@@ -294,7 +324,7 @@ public class ContactosActivity extends AppCompatActivity implements ContactosAda
             return false;
         }
         if (texto.length() > maximo) {
-            campo.setError(getString(R.string.cg_limite, maximo));
+            campo.setError(getResources().getQuantityString(R.plurals.cg_limite, maximo, maximo));
             return false;
         }
         return true;
@@ -354,9 +384,26 @@ public class ContactosActivity extends AppCompatActivity implements ContactosAda
         listaValida = false;
         mostrarCarga(false);
         estado.setText(mensaje);
-        reintentar.setText(R.string.cg_actualizar);
+        reintentar.setContentDescription(getString(R.string.cg_actualizar));
         reintentar.setVisibility(View.VISIBLE);
         Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void verUbicacion(Contacto contacto) {
+        if (contacto == null) return;
+        Intent intent = new Intent(this, UbicacionContactoActivity.class);
+        intent.putExtra("latitud", contacto.getLatitud());
+        intent.putExtra("longitud", contacto.getLongitud());
+        intent.putExtra("nombre", contacto.getNombre());
+        startActivity(intent);
+    }
+
+    @Override
+    public void verVideo(Contacto contacto) {
+        if (contacto != null && contacto.getId() > 0) {
+            VerVideoActivity.reproducirContacto(this, contacto.getId(), contacto.getNombre());
+        }
     }
 
     private void aviso(int mensaje) {

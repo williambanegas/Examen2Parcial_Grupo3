@@ -5,8 +5,7 @@
     android:id="@+id/formularioRaiz"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:background="?android:attr/colorBackground">
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -21,7 +20,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:accessibilityHeading="true"
+            android:id="@+id/contacto_encabezado"
             android:text="@string/contacto_titulo"
             android:textAppearance="?attr/textAppearanceHeadlineMedium"
             android:textStyle="bold"
@@ -131,7 +130,7 @@
             android:textAppearance="?attr/textAppearanceLabelLarge"
             android:textColor="?android:attr/textColorSecondary" />
 
-        <EditText
+        <EditText android:autofillHints="personName"
             android:id="@+id/nombreContacto"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -150,7 +149,7 @@
             android:textAppearance="?attr/textAppearanceLabelLarge"
             android:textColor="?android:attr/textColorSecondary" />
 
-        <EditText
+        <EditText android:autofillHints="phone"
             android:id="@+id/telefonoContacto"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -175,18 +174,6 @@
             android:layout_marginTop="6dp"
             android:text="@string/contacto_longitud_pendiente"
             android:textAppearance="?attr/textAppearanceBodyMedium" />
-
-        <!-- Botón Debug Cargar Prueba (mantenido) -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/cargarPrueba"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="16dp"
-            android:text="@string/contacto_cargar_prueba"
-            android:textColor="@color/white"
-            app:backgroundTint="@color/uth_green"
-            app:cornerRadius="26dp"
-            android:visibility="gone" />
 
         <!-- Botón Salvar Contacto -->
         <com.google.android.material.button.MaterialButton

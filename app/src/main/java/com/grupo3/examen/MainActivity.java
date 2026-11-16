@@ -5,10 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,6 +30,12 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
@@ -57,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private Double valorLatitud;
     private Double valorLongitud;
     private Call<Contacto> peticionActiva;
+    private FusedLocationProviderClient fusedLocationClient;
 
     // Contrato con límite de 20 segundos para la cámara del sistema
     private static class CaptureVideo20s extends ActivityResultContracts.CaptureVideo {
@@ -87,13 +96,53 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-    private final ActivityResultLauncher<String> elegirVideoPrueba = registerForActivityResult(
-            new ActivityResultContracts.GetContent(), uri -> {
-                if (uri != null) {
-                    validarYUsarVideo(uri);
-                    usarUbicacion(14.48, -88.78);
+
+    private final ActivityResultLauncher<String[]> solicitarPermisosUbicacion = registerForActivityResult(
+            new ActivityResultContracts.RequestMultiplePermissions(), resultados -> {
+                boolean fine = Boolean.TRUE.equals(resultados.get(Manifest.permission.ACCESS_FINE_LOCATION));
+                boolean coarse = Boolean.TRUE.equals(resultados.get(Manifest.permission.ACCESS_COARSE_LOCATION));
+                if (fine || coarse) {
+                    obtenerUbicacionActual();
+                } else {
+                    Toast.makeText(this, "Se requiere permiso de ubicación para obtener coordenadas.", Toast.LENGTH_SHORT).show();
                 }
             });
+
+    private void obtenerUbicacionActual() {
+        boolean tieneFine = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        boolean tieneCoarse = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+
+        if (tieneFine || tieneCoarse) {
+            try {
+                fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
+                    if (location != null) {
+                        usarUbicacion(location.getLatitude(), location.getLongitude());
+                    }
+                });
+                LocationRequest locationRequest = new LocationRequest.Builder(
+                        Priority.PRIORITY_HIGH_ACCURACY, 2000)
+                        .setMinUpdateIntervalMillis(1000)
+                        .build();
+
+                fusedLocationClient.requestLocationUpdates(locationRequest, new LocationCallback() {
+                    @Override
+                    public void onLocationResult(@NonNull LocationResult locationResult) {
+                        if (locationResult.getLastLocation() != null) {
+                            Location loc = locationResult.getLastLocation();
+                            usarUbicacion(loc.getLatitude(), loc.getLongitude());
+                            fusedLocationClient.removeLocationUpdates(this);
+                        }
+                    }
+                }, getMainLooper());
+            } catch (SecurityException ignored) {
+            }
+        } else {
+            solicitarPermisosUbicacion.launch(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            });
+        }
+    }
 
     private EditText nombre;
     private EditText telefono;
@@ -106,7 +155,6 @@ public class MainActivity extends AppCompatActivity {
     private ImageView iconoPlayVideo;
     private Button guardar;
     private Button contactosSalvados;
-    private Button prueba;
     private Button reintentar;
     private ProgressBar progreso;
 
@@ -115,6 +163,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         setContentView(R.layout.activity_main);
+        ViewCompat.setAccessibilityHeading(findViewById(R.id.contacto_encabezado), true);
         View raiz = findViewById(R.id.formularioRaiz);
         ViewCompat.setOnApplyWindowInsetsListener(raiz, (vista, insets) -> {
             Insets margenes = insets.getInsets(
@@ -135,7 +184,6 @@ public class MainActivity extends AppCompatActivity {
         View contenedorIconoVideo = findViewById(R.id.contenedorIconoVideo);
         guardar = findViewById(R.id.salvarContacto);
         contactosSalvados = findViewById(R.id.contactosSalvados);
-        prueba = findViewById(R.id.cargarPrueba);
         reintentar = findViewById(R.id.reintentarGuardado);
         progreso = findViewById(R.id.progresoGuardado);
 
@@ -146,10 +194,12 @@ public class MainActivity extends AppCompatActivity {
         guardar.setOnClickListener(vista -> guardarContacto());
         contactosSalvados.setOnClickListener(vista -> abrirContactosSalvados());
         reintentar.setOnClickListener(vista -> guardarContacto());
-        if ((getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
-            prueba.setVisibility(View.VISIBLE);
-            prueba.setOnClickListener(vista -> elegirVideoPrueba.launch("video/mp4"));
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        if (savedInstanceState == null || !savedInstanceState.containsKey("latitud")) {
+            usarUbicacion(15.50, -88.00);
         }
+        obtenerUbicacionActual();
 
         if (savedInstanceState != null) {
             String uri = savedInstanceState.getString("videoUri");
@@ -167,6 +217,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (valorLatitud == null || valorLongitud == null) {
+            obtenerUbicacionActual();
+        }
+    }
+
     /**
      * Navegación a la Pantalla 2 (Lista de Contactos Salvados).
      *
@@ -177,9 +235,8 @@ public class MainActivity extends AppCompatActivity {
      *     startActivity(intent);
      */
     private void abrirContactosSalvados() {
-        Toast.makeText(this,
-                "Pantalla 2 (Contactos Salvados) - Asignada al Integrante 5",
-                Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, ContactosActivity.class);
+        startActivity(intent);
     }
 
     private void verificarPermisosYGrabar() {
@@ -266,7 +323,7 @@ public class MainActivity extends AppCompatActivity {
                 .setTitle(R.string.contacto_permisos_video_titulo)
                 .setMessage(R.string.contacto_permisos_video_mensaje)
                 .setPositiveButton(R.string.contacto_permisos_ajustes, (dialogo, que) -> {
-                    Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
                     intent.setData(Uri.fromParts("package", getPackageName(), null));
                     startActivity(intent);
                 })
@@ -467,7 +524,6 @@ public class MainActivity extends AppCompatActivity {
         if (reproducirVideoLocal != null) {
             reproducirVideoLocal.setEnabled(!cargando);
         }
-        prueba.setEnabled(!cargando);
         nombre.setEnabled(!cargando);
         telefono.setEnabled(!cargando);
     }

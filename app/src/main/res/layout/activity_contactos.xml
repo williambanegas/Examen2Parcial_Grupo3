@@ -1,20 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/cg_raiz" android:layout_width="match_parent" android:layout_height="match_parent"
-    android:orientation="vertical" android:background="#F5F7F5">
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="@string/cg_titulo" android:textSize="24sp" android:textStyle="bold" android:textColor="#00532C" android:accessibilityHeading="true"/>
-        <Button android:id="@+id/cg_volver" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/cg_volver"/>
-        <EditText android:id="@+id/cg_busqueda" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:minHeight="48dp" android:hint="@string/cg_buscar_hint" android:inputType="text" android:singleLine="true" android:imeOptions="actionSearch"/>
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-            <Button android:id="@+id/cg_buscar" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/cg_buscar"/>
-            <Button android:id="@+id/cg_limpiar" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/cg_limpiar"/>
-        </LinearLayout>
-        <ProgressBar android:id="@+id/cg_progreso" android:layout_width="32dp" android:layout_height="32dp" android:layout_gravity="center_horizontal" android:visibility="gone"/>
-        <TextView android:id="@+id/cg_estado" android:layout_width="match_parent" android:layout_height="wrap_content" android:accessibilityLiveRegion="polite" android:textColor="#333333"/>
-        <Button android:id="@+id/cg_reintentar" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/cg_reintentar" android:visibility="gone"/>
-    </LinearLayout>
-    <ListView android:id="@+id/cg_lista" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:clipToPadding="false" android:paddingLeft="16dp" android:paddingRight="16dp" android:paddingBottom="16dp" android:divider="@android:color/transparent" android:dividerHeight="12dp"/>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/cg_raiz" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="#F5F8F6">
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="16dp" android:gravity="center_vertical">
+<com.google.android.material.button.MaterialButton android:id="@+id/cg_volver" style="@style/Widget.Contactos.Icon" app:icon="@drawable/cg_ic_back" android:contentDescription="@string/cg_volver" />
+<TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:text="@string/cg_titulo" android:textSize="24sp" android:textStyle="bold" android:textColor="#153B29" android:id="@+id/cg_encabezado"/>
+<com.google.android.material.button.MaterialButton android:id="@+id/cg_reintentar" style="@style/Widget.Contactos.Icon" app:icon="@drawable/cg_ic_refresh" android:contentDescription="@string/cg_actualizar" />
+</LinearLayout>
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginHorizontal="20dp" android:background="@drawable/cg_bg_search" android:gravity="center_vertical" android:padding="4dp">
+<com.google.android.material.button.MaterialButton android:id="@+id/cg_buscar" style="@style/Widget.Contactos.Icon" app:icon="@drawable/cg_ic_search" android:contentDescription="@string/cg_buscar" />
+<EditText android:importantForAutofill="no" android:id="@+id/cg_busqueda" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:background="@null" android:hint="@string/cg_buscar_hint" android:textColor="#153B29" android:textColorHint="#52675B" android:textSize="16sp" android:inputType="text" android:singleLine="true" android:imeOptions="actionSearch"/>
+<com.google.android.material.button.MaterialButton android:id="@+id/cg_limpiar" style="@style/Widget.Contactos.Icon" app:icon="@drawable/cg_ic_close" android:contentDescription="@string/cg_limpiar" />
+</LinearLayout>
+<ProgressBar android:id="@+id/cg_progreso" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="4dp" android:layout_marginHorizontal="24dp" android:layout_marginTop="12dp" android:indeterminate="true" android:visibility="gone"/>
+<TextView android:id="@+id/cg_estado" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingHorizontal="24dp" android:paddingVertical="16dp" android:textSize="14sp" android:textColor="#52675B" android:accessibilityLiveRegion="polite"/>
+<ListView android:id="@+id/cg_lista" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:clipToPadding="false" android:paddingHorizontal="20dp" android:paddingBottom="20dp" android:divider="@android:color/transparent" android:dividerHeight="12dp" android:scrollbars="none"/>
 </LinearLayout>

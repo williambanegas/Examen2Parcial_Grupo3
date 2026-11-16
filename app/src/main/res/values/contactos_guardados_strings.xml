@@ -25,8 +25,14 @@
     <string name="cg_nombre">Nombre</string>
     <string name="cg_telefono">Teléfono</string>
     <string name="cg_requerido">Este campo es obligatorio.</string>
-    <string name="cg_limite">Máximo %1$d caracteres.</string>
+    <plurals name="cg_limite"><item quantity="one">Máximo %d carácter.</item><item quantity="other">Máximo %d caracteres.</item></plurals>
     <string name="cg_sin_nombre">Sin nombre</string>
     <string name="cg_sin_telefono">Sin teléfono</string>
+    <string name="cg_ubicacion">Ubicación</string>
+    <string name="map_titulo_contacto">Ubicación de %1$s</string>
+    <string name="map_volver">Regresar</string>
     <string name="cg_coordenadas">Las coordenadas recibidas no son válidas. Actualiza la lista.</string>
+    <plurals name="cg_total"><item quantity="one">%d contacto</item><item quantity="other">%d contactos</item></plurals>
+    <string name="cg_cancelar_carga">Cancelar búsqueda</string>
+    <string name="cg_cancelada">Búsqueda cancelada. Puedes volver a buscar.</string>
 </resources>
